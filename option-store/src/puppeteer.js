@@ -25,7 +25,7 @@ const openPage = async (browser) => {
         page.close();
     } 
   }); 
-  setTimeout(() => page.close(), 60*1000);
+  setTimeout(() => page.isClosed() ? null : page.close(), 60*1000);
 }
 
 (async () => {
