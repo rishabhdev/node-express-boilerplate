@@ -12,7 +12,7 @@ const insertData = async (userBody) => {
 };
 
 const getData = async ({ start, end }) => {
-  return Option.find({ $gte: new Date(start), $lt: new Date(end) }).limit(400);
+  return Option.find({ createdAt : { $gte: new Date(start), $lt: new Date(end) } }).limit(400);
 };
 
 module.exports = {
