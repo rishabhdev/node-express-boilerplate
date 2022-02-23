@@ -16,7 +16,7 @@ const openPage = async (browser) => {
     console.log("Market Closed on weekend", currentTime.format("YYYY-MM-DD HH:mm:ss"))
     return;
   }
-  if (((hours*60 + minutes) <= (9*60)) || ((hours*60 + minutes) >= (15*60 + 30))) {
+  if (((hours*60 + minutes) <= (9*60 + 15.1)) || ((hours*60 + minutes) >= (15*60 + 30))) {
       console.log('market closed outside working hours', currentTime.format("YYYY-MM-DD HH:mm:ss"))
       return;
   }
