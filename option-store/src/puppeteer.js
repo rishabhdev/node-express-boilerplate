@@ -53,7 +53,7 @@ const openPage = async (browser) => {
       page.close();
       console.log("Warning: Response not recieved before timeout");
     }
-  }, 55*1000)
+  }, 59*1000)
 }
 
 (async () => {
