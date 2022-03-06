@@ -40,7 +40,7 @@ const openPage = async (browser) => {
           if (Math.abs(item.CE.underlyingValue - item.CE.strikePrice) < 500) {
             return true;
           }
-        })
+        }).map((item) => ({ ...item, timeStamp }));
         console.log('cleaned', cleaned)
         await axios.post('http://localhost:3000/v1/options/insertData', { data: cleaned })
         lastTimeStamp = timeStamp;
