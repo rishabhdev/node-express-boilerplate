@@ -7,6 +7,8 @@ const optionController = require('../../controllers/option.controller');
 
 const router = express.Router();
 
+router.post('/insertLiveData',  optionController.insertLiveData);
+
 router.post('/insertData',  optionController.insertData);
 router.post('/getData',  optionController.getData);
 

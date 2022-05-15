@@ -7,6 +7,11 @@ const insertData = catchAsync(async (req, res) => {
   res.status(httpStatus.CREATED).send({ success: true });
 });
 
+const insertLiveData = catchAsync(async (req, res) => {
+  const insertedData = await optionService.insertLiveData(req.body);
+  res.status(httpStatus.CREATED).send({ success: true });
+});
+
 const getData = catchAsync(async (req, res) => {
   const data = await optionService.getData(req.body);
   res.status(httpStatus.CREATED).send({ success: true, data });
@@ -14,5 +19,6 @@ const getData = catchAsync(async (req, res) => {
 
 module.exports = {
   insertData,
-  getData
+  getData,
+  insertLiveData
 };

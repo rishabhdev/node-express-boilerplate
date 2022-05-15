@@ -7,8 +7,13 @@ const optionSchema = mongoose.Schema(
   {
     data: {
       type: Array,
-      required: true,
+      required: false,
       index: false,
+    },
+    liveData: {
+      type: Object,
+      required: false,
+      index: false
     }
   },
   {
