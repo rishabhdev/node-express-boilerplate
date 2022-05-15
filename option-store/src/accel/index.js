@@ -1,13 +1,14 @@
 var apidata = require('pix-apidata');
 const moment = require('moment');
 const axios = require('axios').default;
-const dotenv = require('dotenv');
+// const dotenv = require('dotenv');
+const _ = require('lodash');
 
-dotenv.config({ path: path.join(__dirname, '../../.env') });
+// dotenv.config({ path: path.join(__dirname, '../../.env') });
 
 var strikes = require('./strikes');
 
-const apiKey = "your-api-key";
+const apiKey = "kk";
 const apiServer = "apidata.accelpix.in";
 
 const state = {
@@ -23,7 +24,7 @@ const state = {
   }
 }
 
-const processBuffer = () => {
+const processBuffer = async () => {
   const buffer = state.get('buffer');
   const groupedBuffer = _.groupBy(buffer, 'ticker');
   const values = _.values(groupedBuffer);
@@ -38,7 +39,10 @@ const processBuffer = () => {
   });
   state.emptyBuffer();
 
-  await axios.post('http://localhost:3000/v1/options/insertLiveData', { data: _.map(dataToSave, (data) => ({ liveData: data })) });
+  console.log('dataToSave', dataToSave)
+  if (dataToSave.length) {
+    await axios.post('http://localhost:3000/v1/options/insertLiveData', { data: _.map(dataToSave, (_data) => ({ liveData: _data })) });
+  }
 
   // save dataToSave
 };
