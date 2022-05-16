@@ -1,10 +1,7 @@
 var apidata = require('pix-apidata');
 const moment = require('moment');
 const axios = require('axios').default;
-// const dotenv = require('dotenv');
 const _ = require('lodash');
-
-// dotenv.config({ path: path.join(__dirname, '../../.env') });
 
 var strikes = require('./strikes');
 
@@ -41,7 +38,8 @@ const processBuffer = async () => {
 
   console.log('dataToSave', dataToSave)
   if (dataToSave.length) {
-    await axios.post('http://localhost:3000/v1/options/insertLiveData', { data: _.map(dataToSave, (_data) => ({ liveData: _data })) });
+    const k = await axios.post('http://localhost:3000/v1/options/insertLiveData', { data: _.map(dataToSave, (_data) => ({ liveData: _data })) });
+    console.log('k', k);
   }
 
   // save dataToSave
@@ -60,14 +58,21 @@ const processOption = (data) => {
   state.addToBuffer(modifiedData);
 }
 
+const processFuture = (data) => {
+  const modifiedData = { ...data, type: 'future', symbol: 'NIFTY', timestamp: Date.now() };
+  state.addToBuffer(modifiedData);
+}
+
 const processGreek = (data) => {
   state.set(data.ticker, data);
 }
 
 apidata.callbacks.onTrade(t => {
-  if (t.ticker === 'NIFTY') {
+  if (t.ticker === 'NIFTY 50') {
     processNifty(t);
-  } else if (t.ticker) {
+  } else if (t.ticker === 'NIFTY-1') {
+    processFuture(t);
+  } else {
     processOption(t);
   }
   console.log(t);
@@ -81,15 +86,21 @@ apidata.callbacks.onGreeks(greek => {
 const subscribeForOptions = async () => {
   const nifty = state.get('niftyLatest');
   if (nifty) {
-    const newStrikes = strikes.getStrikes(nifty);
+    const newStrikes = _.map(strikes.getOptionSymbols(nifty), 'symbol');
     const oldStrikes = state.get('strikes');
-    const enteringStrikes = _.differenceBy(newStrikes, oldStrikes || [], 'symbol');
-    const leavingStrikes = _.differenceBy(oldStrikes, newStrikes || [], 'symbol');
+    const enteringStrikes = _.difference(newStrikes, oldStrikes || []);
+    const leavingStrikes = _.difference(oldStrikes, newStrikes || []);
+    console.log({ enteringStrikes, leavingStrikes });
     if (enteringStrikes.length) {
       await apidata.stream.subscribeAll(enteringStrikes);
-      await apidata.stream.unsubscribeAll(leavingStrikes);
+      // await apidata.stream.unsubscribeAll(leavingStrikes);
       await apidata.stream.subscribeGreeks(enteringStrikes);
-      await apidata.stream.unsubscribeGreeks(leavingStrikes);
+      // await apidata.stream.unsubscribeGreeks(leavingStrikes);
+    }
+
+    if (leavingStrikes.length) {
+      await apidata.stream.unsubscribeAll(leavingStrikes);
+      // await apidata.stream?.unsubscribeGreeks(leavingStrikes);
     }
   }
 }
@@ -100,7 +111,8 @@ const subscribeForFutures = async () => {
 
 apidata.initialize(apiKey, apiServer)
   .then(async () => {
-    await apidata.stream.subscribeAll(['NIFTY']);
+    console.log('initialized');
+    await apidata.stream.subscribeAll(['NIFTY 50', 'NIFTY-1']);
 
     // const strikesToSubscribe = _.map(strikes, (strike) => strike.symbol);
     // await apidata.stream.subscribeGreeks(["NIFTY2220318500CE"])
@@ -110,7 +122,7 @@ apidata.initialize(apiKey, apiServer)
 
 
 
-  setInterval(() => {
-    processBuffer();
-    subscribeForOptions();
+  setInterval(async () => {
+    await processBuffer();
+    await subscribeForOptions();
   }, 1000*30);

@@ -36,9 +36,4 @@ const getOptionSymbols = (assetPrice) => {
   return [...currentExpiryStrikesCE, ...currentExpiryStrikesPE, ...nextExpiryStrikesCE, ...nextExpiryStrikesPE];
 }
 
-// console.log(getOptionSymbols(17000));
-// console.log(getOptionSymbols(16500));
-// console.log(getOptionSymbols(17600));
-// console.log(getOptionSymbols(15000));
-
 module.exports = { getStrikes, getOptionSymbols }

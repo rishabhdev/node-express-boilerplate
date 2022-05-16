@@ -8,7 +8,7 @@ const insertData = catchAsync(async (req, res) => {
 });
 
 const insertLiveData = catchAsync(async (req, res) => {
-  const insertedData = await optionService.insertLiveData(req.body);
+  const insertedData = await optionService.insertLiveData(req.body.data);
   res.status(httpStatus.CREATED).send({ success: true });
 });
 

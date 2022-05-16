@@ -12,7 +12,8 @@ const insertData = async (userBody) => {
 };
 
 const insertLiveData = async (userBody) => {
-  return Option.bulkWrite(userBody);
+  console.log('userBody', userBody);
+  return Option.insertMany(userBody);
 };
 
 const getData = async ({ start, end }) => {
