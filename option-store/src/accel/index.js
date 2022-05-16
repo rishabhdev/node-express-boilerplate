@@ -12,7 +12,10 @@ const state = {
   values: {},
   get: (key) => state.values[key],
   set: (key, value) => state.values[key] = value,
-  addToBuffer: (data) => {
+  addToBuffer: (data = {}) => {
+    const time = state.get(`${data.ticker}-time`);
+    if (time === data.time) return;
+
     const buffer = state.get('buffer') || [];
     state.set('buffer', [...buffer, data]);
   },
@@ -68,6 +71,8 @@ const processGreek = (data) => {
 }
 
 apidata.callbacks.onTrade(t => {
+  state.set(`${data.ticker}-time`, data.time);
+
   if (t.ticker === 'NIFTY 50') {
     processNifty(t);
   } else if (t.ticker === 'NIFTY-1') {
@@ -75,11 +80,11 @@ apidata.callbacks.onTrade(t => {
   } else {
     processOption(t);
   }
-  console.log(t);
+  // console.log(t);
 });
 
 apidata.callbacks.onGreeks(greek => {
-  console.log(greek);
+  // console.log(greek);
   processGreek(greek);
 });
 
