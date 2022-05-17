@@ -5,7 +5,7 @@ const _ = require('lodash');
 
 var strikes = require('./strikes');
 
-const apiKey = "kk";
+const apiKey = "NGk3a2NxbttJTxaO2aWh+raDXLk=";
 const apiServer = "apidata.accelpix.in";
 
 const state = {
@@ -14,10 +14,13 @@ const state = {
   set: (key, value) => state.values[key] = value,
   addToBuffer: (data = {}) => {
     const time = state.get(`${data.ticker}-time`);
+    console.log(time, data.time)
     if (time === data.time) return;
 
     const buffer = state.get('buffer') || [];
     state.set('buffer', [...buffer, data]);
+    state.set(`${data.ticker}-time`, data.time);
+
   },
   emptyBuffer: () => {
     state.set('buffer', []);
@@ -71,8 +74,6 @@ const processGreek = (data) => {
 }
 
 apidata.callbacks.onTrade(t => {
-  state.set(`${data.ticker}-time`, data.time);
-
   if (t.ticker === 'NIFTY 50') {
     processNifty(t);
   } else if (t.ticker === 'NIFTY-1') {
@@ -84,7 +85,6 @@ apidata.callbacks.onTrade(t => {
 });
 
 apidata.callbacks.onGreeks(greek => {
-  // console.log(greek);
   processGreek(greek);
 });
 
