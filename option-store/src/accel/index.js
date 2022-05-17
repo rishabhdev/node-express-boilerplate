@@ -14,7 +14,7 @@ const state = {
   set: (key, value) => state.values[key] = value,
   addToBuffer: (data = {}) => {
     const time = state.get(`${data.ticker}-time`);
-    console.log(time, data.time)
+    // console.log(time, data.time)
     if (time === data.time) return;
 
     const buffer = state.get('buffer') || [];
