@@ -3,6 +3,10 @@ const moment = require('moment');
 const axios = require('axios').default;
 const _ = require('lodash');
 
+// Need to figure out script to run daily
+// Send strike price also in option data
+// capture iv for max, avg, last
+
 var strikes = require('./strikes');
 
 const apiKey = "NGk3a2NxbttJTxaO2aWh+raDXLk=";
@@ -60,7 +64,10 @@ const processNifty = (data) => {
 }
 
 const processOption = (data) => {
-  const modifiedData = { ...data, type: 'option', symbol: 'NIFTY', timestamp: Date.now() };
+  const generatedStrikes = state.get('generatedStrikes');
+  const strike = _.find(generatedStrikes, { symbol: data.ticker });
+
+  const modifiedData = { ...data, type: 'option', strike: strike?.strike, symbol: 'NIFTY', timestamp: Date.now() };
   state.addToBuffer(modifiedData);
 }
 
@@ -91,7 +98,10 @@ apidata.callbacks.onGreeks(greek => {
 const subscribeForOptions = async () => {
   const nifty = state.get('niftyLatest');
   if (nifty) {
-    const newStrikes = _.map(strikes.getOptionSymbols(nifty), 'symbol');
+    const generatedStrikes = strikes.getOptionSymbols(nifty);
+    state.set('generatedStrikes', generatedStrikes);
+
+    const newStrikes = _.map(generatedStrikes, 'symbol');
     const oldStrikes = state.get('strikes');
     const enteringStrikes = _.difference(newStrikes, oldStrikes || []);
     const leavingStrikes = _.difference(oldStrikes, newStrikes || []);
