@@ -107,6 +107,8 @@ const subscribeForOptions = async () => {
       await apidata.stream.unsubscribeAll(leavingStrikes);
       // await apidata.stream?.unsubscribeGreeks(leavingStrikes);
     }
+    state.set('strikes', newStrikes);
+
   }
 }
 
