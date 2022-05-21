@@ -17,7 +17,15 @@ const insertLiveData = async (userBody) => {
 };
 
 const getData = async ({ start, end, type = 'option' }) => {
-  return Option.find({ 'liveData.type': type, createdAt : { $gte: new Date(start), $lt: new Date(end) } }, { liveData: true, createdAt: true }).limit(40000);
+  return Option.find({ 'liveData.type': type, createdAt : { $gte: new Date(start), $lt: new Date(end) } }, { 
+    'liveData.price': true, 
+    'liveData.volume': true, 
+    createdAt: true,
+    'liveData.oi': true,
+    'liveData.quantity': true,
+    'liveData.greeks.iv': true,
+    'liveData.time': true,
+  }).limit(40000);
 };
 
 module.exports = {
