@@ -26,6 +26,7 @@ const getData = async ({ start, end, type = 'option' }) => {
     'liveData.greeks.iv': true,
     'liveData.time': true,
     'liveData.niftyPrice': true,
+    'liveData.strike': true,
   }).limit(40000);
 };
 
