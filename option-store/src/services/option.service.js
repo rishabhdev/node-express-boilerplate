@@ -17,7 +17,7 @@ const insertLiveData = async (userBody) => {
 };
 
 const getData = async ({ start, end, type = 'option' }) => {
-  return Option.find({ 'liveData.option': type, createdAt : { $gte: new Date(start), $lt: new Date(end) } }, { liveData: true, createdAt: true }).limit(40000);
+  return Option.find({ 'liveData.type': type, createdAt : { $gte: new Date(start), $lt: new Date(end) } }, { liveData: true, createdAt: true }).limit(40000);
 };
 
 module.exports = {
