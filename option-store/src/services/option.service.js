@@ -16,8 +16,9 @@ const insertLiveData = async (userBody) => {
   return Option.insertMany(userBody);
 };
 
-const getData = async ({ start, end, type = 'option' }) => {
-  return Option.find({ 'liveData.type': type, createdAt : { $gte: new Date(start), $lt: new Date(end) } }, { 
+const getData = async ({ start, end, type = 'option', expiry }) => {
+  const expiryQuery = expiry ? { 'liveData.expiry': { $eq: new Date(expiry) } } : {}
+  return Option.find({ 'liveData.type': type, ...expiryQuery, createdAt : { $gte: new Date(start), $lt: new Date(end) } }, { 
     'liveData.price': true, 
     'liveData.volume': true, 
     createdAt: true,
@@ -27,6 +28,7 @@ const getData = async ({ start, end, type = 'option' }) => {
     'liveData.time': true,
     'liveData.niftyPrice': true,
     'liveData.strike': true,
+    'liveData.expiry': true,
   }).limit(40000);
 };
 

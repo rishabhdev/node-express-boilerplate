@@ -29,10 +29,10 @@ const getOptionSymbols = (assetPrice) => {
   const yNextExpiry = nextExpiry.format('YY');
   const mNextExpiry = nextExpiry.format('M');
   const dNextExpiry = nextExpiry.format('DD');
-  const currentExpiryStrikesCE = strikes.map(strike => ({ type: 'CE', strike, symbol: `NIFTY${yCurrentExpiry}${mCurrentExpiry}${dCurrentExpiry}${strike}CE`, expiry: expiryDates[currentExpiryIndex] }));
-  const currentExpiryStrikesPE = strikes.map(strike => ({ type: 'PE', strike, symbol: `NIFTY${yCurrentExpiry}${mCurrentExpiry}${dCurrentExpiry}${strike}PE`, expiry: expiryDates[currentExpiryIndex] }));
-  const nextExpiryStrikesCE = strikes.map(strike => ({ type: 'CE', strike, symbol: `NIFTY${yNextExpiry}${mNextExpiry}${dNextExpiry}${strike}CE`, expiry: expiryDates[nextExpiryIndex] }));
-  const nextExpiryStrikesPE = strikes.map(strike => ({ type: 'PE', strike, symbol: `NIFTY${yNextExpiry}${mNextExpiry}${dNextExpiry}${strike}PE`, expiry: expiryDates[nextExpiryIndex] }));
+  const currentExpiryStrikesCE = strikes.map(strike => ({ type: 'CE', strike, symbol: `NIFTY${yCurrentExpiry}${mCurrentExpiry}${dCurrentExpiry}${strike}CE`, expiry: moment(expiryDates[currentExpiryIndex], 'dddd, DD MMM, YYYY').toISOString() }));
+  const currentExpiryStrikesPE = strikes.map(strike => ({ type: 'PE', strike, symbol: `NIFTY${yCurrentExpiry}${mCurrentExpiry}${dCurrentExpiry}${strike}PE`, expiry: moment(expiryDates[currentExpiryIndex], 'dddd, DD MMM, YYYY').toISOString() }));
+  const nextExpiryStrikesCE = strikes.map(strike => ({ type: 'CE', strike, symbol: `NIFTY${yNextExpiry}${mNextExpiry}${dNextExpiry}${strike}CE`, expiry: moment(expiryDates[nextExpiryIndex], 'dddd, DD MMM, YYYY').toISOString() }));
+  const nextExpiryStrikesPE = strikes.map(strike => ({ type: 'PE', strike, symbol: `NIFTY${yNextExpiry}${mNextExpiry}${dNextExpiry}${strike}PE`, expiry: moment(expiryDates[nextExpiryIndex], 'dddd, DD MMM, YYYY').toISOString() }));
   return [...currentExpiryStrikesCE, ...currentExpiryStrikesPE, ...nextExpiryStrikesCE, ...nextExpiryStrikesPE];
 }
 

@@ -67,7 +67,7 @@ const processOption = (data) => {
   const generatedStrikes = state.get('generatedStrikes');
   const strike = _.find(generatedStrikes, { symbol: data.ticker });
 
-  const modifiedData = { ...data, type: 'option', strike: strike?.strike, symbol: 'NIFTY', timestamp: Date.now() };
+  const modifiedData = { ...data, type: 'option', strike: strike?.strike, expiry: strike?.expiry, symbol: 'NIFTY', timestamp: Date.now() };
   state.addToBuffer(modifiedData);
 }
 
