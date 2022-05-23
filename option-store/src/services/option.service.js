@@ -29,6 +29,7 @@ const getData = async ({ start, end, type = 'option', expiry }) => {
     'liveData.niftyPrice': true,
     'liveData.strike': true,
     'liveData.expiry': true,
+    'liveData.ticker': true,
   }).limit(40000);
 };
 
