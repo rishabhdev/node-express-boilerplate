@@ -33,10 +33,10 @@ const getOptionSymbols = (assetPrice) => {
   const nextExpiry = moment(expiryDates[nextExpiryIndex], 'dddd, DD MMM, YYYY');
 
   const yCurrentExpiry = currentExpiry.format('YY');
-  const mCurrentExpiry = isLastExpiryOfMonth(currentExpiry) ? currentExpiry.format('MMM') : currentExpiry.format('M');
+  const mCurrentExpiry = isLastExpiryOfMonth(currentExpiry) ? currentExpiry.format('MMM').toUpperCase() : currentExpiry.format('M');
   const dCurrentExpiry = isLastExpiryOfMonth(currentExpiry) ?  '' : currentExpiry.format('DD');
   const yNextExpiry = nextExpiry.format('YY');
-  const mNextExpiry = isLastExpiryOfMonth(nextExpiry) ? nextExpiry.format('MMM') : currentExpiry.format('M');
+  const mNextExpiry = isLastExpiryOfMonth(nextExpiry) ? nextExpiry.format('MMM').toUpperCase() : currentExpiry.format('M');
   const dNextExpiry = isLastExpiryOfMonth(nextExpiry) ? '' : nextExpiry.format('DD');
   const currentExpiryStrikesCE = strikes.map(strike => ({ type: 'CE', strike, symbol: `NIFTY${yCurrentExpiry}${mCurrentExpiry}${dCurrentExpiry}${strike}CE`, expiry: moment(expiryDates[currentExpiryIndex], 'dddd, DD MMM, YYYY').toISOString() }));
   const currentExpiryStrikesPE = strikes.map(strike => ({ type: 'PE', strike, symbol: `NIFTY${yCurrentExpiry}${mCurrentExpiry}${dCurrentExpiry}${strike}PE`, expiry: moment(expiryDates[currentExpiryIndex], 'dddd, DD MMM, YYYY').toISOString() }));
