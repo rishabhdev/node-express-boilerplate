@@ -17,7 +17,7 @@ const insertLiveData = async (userBody) => {
 };
 
 const getData = async ({ start, end, type = 'option', expiry }) => {
-  const expiryQuery = expiry ? { 'liveData.expiry': { $eq: new Date(expiry) } } : {}
+  const expiryQuery = expiry ? { 'liveData.expiry': { $eq: new Date(expiry).toISOString() } } : {}
   return Option.find({ 'liveData.type': type, ...expiryQuery, createdAt : { $gte: new Date(start), $lt: new Date(end) } }, { 
     'liveData.price': true, 
     'liveData.volume': true, 
