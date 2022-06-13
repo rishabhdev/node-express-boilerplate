@@ -30,7 +30,7 @@ const getData = async ({ start, end, type = 'option', expiry }) => {
     'liveData.strike': true,
     'liveData.expiry': true,
     'liveData.ticker': true,
-  }).limit(40000);
+  }).limit(80000);
 };
 
 module.exports = {
