@@ -89,7 +89,7 @@ const processOption = (data) => {
     expiry: strike?.expiry, 
     symbol: 'NIFTY', 
     timestamp: Date.now(),
-    greeks: state.get(saveData.ticker),
+    greeks: state.get(data.ticker),
     niftyPrice: state.get('niftyLatest')
   };
   state.addToBuffer(modifiedData);

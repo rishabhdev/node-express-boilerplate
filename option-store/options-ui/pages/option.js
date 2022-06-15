@@ -16,6 +16,10 @@ import { Line } from 'react-chartjs-2';
 import _ from 'lodash';
 import { formatData, processOption } from '../utils/formatOption';
 
+// TODO: add last day oi
+// TODO: moneyflow of options
+// TODO: future -plot premium
+
 const getOptionsData = async () => {
  const x =  await axios.post('http://18.234.100.126:3000/v1/options/getData', {
     "start": "2022-06-14T09:15:00.882+05:30",
