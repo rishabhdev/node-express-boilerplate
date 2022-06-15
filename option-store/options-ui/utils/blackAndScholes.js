@@ -170,6 +170,8 @@ import moment from 'moment';
     remaingTimeInCurrentDay = ((15 - hours)/(365*7) + (minutes/(365*7*60)));
   }
   const daysRemaining = moment(expiryMmDdYyyy, 'MM/DD/YYYY').diff(moment(currMmDdYyyy, 'MM/DD/YYYY'), 'days');
+  // console.log({ currMmDdYyyy, expiryMmDdYyyy, daysRemaining, remaingTimeInCurrentDay });
+
   return (remaingTimeInCurrentDay + daysRemaining/365)
 };
 

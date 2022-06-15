@@ -26,8 +26,11 @@ export const formatData = (apiData) => {
           const niftyPrice = item.liveData.niftyPrice;
           const callPut = bs.getCallPut(item.liveData.ticker);
           const o = item.liveData.price;
+          
           const iv = bs.getIv(niftyPrice, item.liveData?.strike, t, o, callPut);
-          _.set(item, 'calculatedIv', iv);
+
+          // console.log({niftyPrice, strike: item.liveData?.strike, t, o, callPut, iv});
+          _.set(item, 'liveData.calculatedIv', iv);
         }
       });
     });
@@ -79,7 +82,7 @@ const calculateCoiByCv = (a, b, arr, index) => {
 
 const calculateScore = (a, b, arr, index) => {
   const item = arr[index];
-  return item.logOi*(3 - item.nPrice - item.nIv - item.nCoiByCv);
+  return (item.logOi - item.nPrice - item.nIv - item.nCoiByCv);
 }
 
 export const processOption = (formattedData)=> {
@@ -91,7 +94,7 @@ export const processOption = (formattedData)=> {
    calculateCascading(strikeData, 'liveData.oi', 'logOi', Math.log);
    calculateCascading(strikeData, 'liveData.price', 'nPrice', normalise);
    calculateCascading(strikeData, null, 'nCoiByCv', calculateCoiByCv);
-   calculateCascading(strikeData, 'liveData.greeks.iv', 'nIv', normalise);
+   calculateCascading(strikeData, 'liveData.calculatedIv', 'nIv', normalise);
    calculateCascading(strikeData, null, 'score', calculateScore);
  });
 
@@ -99,7 +102,7 @@ export const processOption = (formattedData)=> {
   calculateCascading(strikeData, 'liveData.oi', 'logOi', Math.log);
   calculateCascading(strikeData, 'liveData.price', 'nPrice', normalise);
   calculateCascading(strikeData, null, 'nCoiByCv', calculateCoiByCv);
-  calculateCascading(strikeData, 'liveData.greeks.iv', 'nIv', normalise);
+  calculateCascading(strikeData, 'liveData.calculatedIv', 'nIv', normalise);
   calculateCascading(strikeData, null, 'score', calculateScore);
  });
 
