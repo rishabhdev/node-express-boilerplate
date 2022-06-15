@@ -5,7 +5,17 @@ const expiryDates = require('./expiryDates');
 const getStrikes = (assetPrice, interval = 50) => {
  const mod = assetPrice%interval;
  const atTheMoney = assetPrice - mod;
- const spread = 10;
+ const curr = moment().utcOffset("+05:30");
+ const hrs = curr.hours();
+ const mins = curr.minutes();
+
+ let spread = 10;
+
+ // Capture more data during the last minutes
+ if (hrs === 15 && (mins > 25)) {
+   spread = 18
+ }
+
  let strikes = [atTheMoney];
  let i = spread;
  while(i) {
