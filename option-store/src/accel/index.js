@@ -50,7 +50,7 @@ const processBuffer = async () => {
 
       const t = bs.yearsFromExpiry(saveData?.expiry);
       const niftyPrice = saveData.niftyPrice;
-      const callPut = bs.getCallPut(data.ticker);
+      const callPut = bs.getCallPut(saveData.ticker);
       const o = saveData.price;
       const iv = bs.getIv(niftyPrice, saveData?.strike, t, o, callPut);
       saveData.calculatedIv = iv;
