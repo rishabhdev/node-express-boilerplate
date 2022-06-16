@@ -3,6 +3,8 @@ const moment = require('moment');
 const axios = require('axios').default;
 const _ = require('lodash');
 
+const bs = require('./blackAndScholes');
+
 // Need to figure out script to run daily
 // Send strike price also in option data
 // capture iv for max, avg, last
@@ -18,7 +20,6 @@ const state = {
   set: (key, value) => state.values[key] = value,
   addToBuffer: (data = {}) => {
     const time = state.get(`${data.ticker}-time`);
-    // console.log(time, data.time)
     if (time === data.time) return;
 
     const buffer = state.get('buffer') || [];
@@ -40,7 +41,19 @@ const processBuffer = async () => {
     const lastItem = _.last(data);
     const saveData = { ...lastItem, quantity };
     if (lastItem.type === 'option') {
-      return {...saveData, greeks: state.get(saveData.ticker), niftyPrice: state.get('niftyLatest') };
+      if (!saveData.greeks) {
+        saveData.greeks = state.get(saveData.ticker);
+      }  
+      if (!saveData.niftyPrice) {
+        saveData.niftyPrice = state.get('niftyLatest');
+      }
+
+      const t = bs.yearsFromExpiry(saveData?.expiry);
+      const niftyPrice = saveData.niftyPrice;
+      const callPut = bs.getCallPut(data.ticker);
+      const o = saveData.price;
+      const iv = bs.getIv(niftyPrice, saveData?.strike, t, o, callPut);
+      saveData.calculatedIv = iv;
     }
     return saveData;
   });
@@ -63,11 +76,22 @@ const processNifty = (data) => {
   state.addToBuffer(modifiedData);
 }
 
+
+
 const processOption = (data) => {
   const generatedStrikes = state.get('generatedStrikes');
   const strike = _.find(generatedStrikes, { symbol: data.ticker });
-
-  const modifiedData = { ...data, type: 'option', strike: strike?.strike, expiry: strike?.expiry, symbol: 'NIFTY', timestamp: Date.now() };
+  
+  const modifiedData = { 
+    ...data, 
+    type: 'option', 
+    strike: strike?.strike, 
+    expiry: strike?.expiry, 
+    symbol: 'NIFTY', 
+    timestamp: Date.now(),
+    greeks: state.get(saveData.ticker),
+    niftyPrice: state.get('niftyLatest')
+  };
   state.addToBuffer(modifiedData);
 }
 

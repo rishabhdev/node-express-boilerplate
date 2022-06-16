@@ -14,14 +14,14 @@ import { Line } from 'react-chartjs-2';
 // import randomColor from 'randomcolor';
 // import faker from 'faker';
 import _ from 'lodash';
-import { formatData } from '../utils/formatOption';
+import { formatData, processOption } from '../utils/formatOption';
 
 const getOptionsData = async () => {
  const x =  await axios.post('http://18.234.100.126:3000/v1/options/getData', {
-    "start": "2022-06-08T10:30:00.882+05:30",
-     "end": "2022-06-08T13:50:00.413+05:30",
+    "start": "2022-06-14T09:15:00.882+05:30",
+     "end": "2022-06-14T15:30:00.413+05:30",
      "type": "option",
-     "expiry": "2022-06-09T00:00:00.000Z"
+     "expiry": "2022-06-16T00:00:00.000Z"
 });
 
 console.log('getOptionsData', x);
@@ -84,6 +84,7 @@ function App() {
     const a = async () => {
       const abc = await getOptionsData();
       const formattedData = formatData(abc);
+      processOption(formattedData);
       console.log("formattedData", formattedData);
       setData(abc);
     };

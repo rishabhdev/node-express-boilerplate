@@ -30,6 +30,7 @@ const getData = async ({ start, end, type = 'option', expiry }) => {
     'liveData.strike': true,
     'liveData.expiry': true,
     'liveData.ticker': true,
+    'liveData.calculatedIv': true,
   }).limit(80000);
 };
 
