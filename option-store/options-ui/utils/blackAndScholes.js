@@ -4,7 +4,7 @@
  * @author Matt Loppatto <mattloppatto@gmail.com>
  * @copyright 2014 Matt Loppatto
  */
- const moment = require('moment');
+import moment from 'moment';
 
 /**
  * Standard normal cumulative distribution function.  The probability is estimated
@@ -14,7 +14,7 @@
  * @param {Number} x The upper bound to integrate over.  This is P{Z <= x} where Z is a standard normal random variable.
  * @returns {Number} The probability that a standard normal random variable will be less than or equal to x
  */
- function stdNormCDF(x)
+ export function stdNormCDF(x)
  {
    var probability = 0;
    // avoid divergence in the series which happens around +/-8 when summing the
@@ -47,7 +47,7 @@
   * @param {Number} n The number to calculate the double factorial of
   * @returns {Number} The double factorial of n
   */
- function _doubleFactorial(n)
+ export function _doubleFactorial(n)
  {
    var val = 1;
    for(var i = n; i > 1; i-=2)
@@ -70,7 +70,7 @@
   * @param   {String} callPut The type of option to be priced - "call" or "put"
   * @returns {Number}         Price of the option
   */
- function blackScholes(s, k, t, v, r, callPut)
+ export function blackScholes(s, k, t, v, r, callPut)
  {
    var price = null;
    var w = (r * t + Math.pow(v, 2) * t / 2 - Math.log(k / s)) / (v * Math.sqrt(t));
@@ -95,7 +95,7 @@
   * @param   {Number} r Anual risk-free interest rate as a decimal
   * @returns {Number} The value of omega
   */
- function getW(s, k, t, v, r)
+ export function getW(s, k, t, v, r)
  {
    var w = (r * t + Math.pow(v, 2) * t / 2 - Math.log(k / s)) / (v * Math.sqrt(t));
    return w;
@@ -117,7 +117,7 @@
   */
 
  // s, k, t, v, r, callPut
- function getIv(s, k, t, o, callPut) {
+ export function getIv(s, k, t, o, callPut) {
   const MAX_ITERATIONS = 50;
   const r = 0.10;
   let lowerBound = 0, upperBound = 1, lastLowerBound, lastUpperBound;
@@ -155,7 +155,7 @@
  }
 
 
- const yearsFromExpiry = (expiry) => {
+ export const yearsFromExpiry = (expiry) => {
   const curr = moment().utcOffset("+05:30");
   const hours = curr.hours();
   const minutes = curr.minutes();
@@ -174,7 +174,7 @@
 };
 
 //  function getIv(s, k, t, o, callPut) {
-const getCallPut = (ticker) => {
+export const getCallPut = (ticker) => {
   const type = ticker.slice(-2);
   if(type === 'CE') { 
     return 'call';
@@ -185,12 +185,3 @@ const getCallPut = (ticker) => {
   console.log("type - getCallPut", type);
   return 'put';
 }
- 
- module.exports = {
-   blackScholes: blackScholes,
-   stdNormCDF: stdNormCDF,
-   getW: getW,
-   getIv: getIv,
-   yearsFromExpiry: yearsFromExpiry,
-   getCallPut: getCallPut,
- };

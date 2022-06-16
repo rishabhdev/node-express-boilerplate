@@ -1,5 +1,6 @@
 import _ from 'lodash';
 import * as ss from 'simple-statistics'
+import * as bs from './blackAndScholes';
 
 export const formatData = (apiData) => {
   const insideData = _.get(apiData, 'data.data');
@@ -18,6 +19,15 @@ export const formatData = (apiData) => {
       _.forEach(strikeData, (item) => {
         if (!niftyPrice[item.liveData?.time]) {
           niftyPrice[item.liveData?.time] = item.liveData?.niftyPrice;
+        }
+
+        if (!item.liveData.calculatedIv) {
+          const t = bs.yearsFromExpiry(item.liveData?.expiry);
+          const niftyPrice = item.liveData.niftyPrice;
+          const callPut = bs.getCallPut(item.liveData.ticker);
+          const o = item.liveData.price;
+          const iv = bs.getIv(niftyPrice, item.liveData?.strike, t, o, callPut);
+          _.set(item, 'calculatedIv', iv);
         }
       });
     });
