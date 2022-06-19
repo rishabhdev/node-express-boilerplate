@@ -8,7 +8,10 @@ const bs = require('./blackAndScholes');
 // Need to figure out script to run daily
 // Send strike price also in option data
 // capture iv for max, avg, last
+// Thursday issue: this expiry ignored
 
+// VWAP
+// ENdof day for all
 var strikes = require('./strikes');
 
 const apiKey = "NGk3a2NxbttJTxaO2aWh+raDXLk=";
@@ -41,6 +44,9 @@ const processBuffer = async () => {
     const lastItem = _.last(data);
     const saveData = { ...lastItem, quantity };
     if (lastItem.type === 'option') {
+      const endOfDaySummaryOption = state.get('end_of_day_summary_option')  || { strikes: {}, type: 'end_of_day_summary_option' };
+      endOfDaySummaryOption.strikes[lastItem.strike] = saveData; 
+      state.set('end_of_day_summary_option', endOfDaySummaryOption);
       if (!saveData.greeks) {
         saveData.greeks = state.get(saveData.ticker);
       }  
@@ -54,7 +60,11 @@ const processBuffer = async () => {
       const o = saveData.price;
       const iv = bs.getIv(niftyPrice, saveData?.strike, t, o, callPut);
       saveData.calculatedIv = iv;
+    } else {
+      const key = `end_of_day_summary_${lastItem.type}`;
+      state.set(key, { ...lastItem, type: key });
     }
+
     return saveData;
   });
   state.emptyBuffer();
@@ -62,7 +72,17 @@ const processBuffer = async () => {
   console.log('dataToSave', dataToSave)
   if (dataToSave.length) {
     const k = await axios.post('http://localhost:3000/v1/options/insertLiveData', { data: _.map(dataToSave, (_data) => ({ liveData: _data })) });
-    console.log('k', k);
+    // console.log('k', k);
+  }
+
+  const curr = moment().utcOffset("+05:30");
+  const hours = curr.hours();
+  const minutes = curr.minutes();
+  if (hours === 15 && minutes === 30) {
+    const optionSummary = state.get('end_of_day_summary_option');
+    const futureSummary = state.get('end_of_day_summary_future');
+    const indexsummary = state.get('end_of_day_summary_index');
+    await axios.post('http://localhost:3000/v1/options/insertLiveData', { data: _.map([optionSummary, futureSummary, indexsummary], (_data) => ({ liveData: _data })) });
   }
 
   // save dataToSave
@@ -92,6 +112,8 @@ const processOption = (data) => {
     greeks: state.get(data.ticker),
     niftyPrice: state.get('niftyLatest')
   };
+
+  // const endOfDaySummary = 
   state.addToBuffer(modifiedData);
 }
 

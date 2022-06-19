@@ -167,10 +167,9 @@ import moment from 'moment';
   } else if (hours < 9) {
     remaingTimeInCurrentDay = 1/365;
   } else {
-    remaingTimeInCurrentDay = ((15 - hours)/(365*7) + (minutes/(365*7*60)));
+    remaingTimeInCurrentDay = ((15 - hours)/(365*24) + ((60 - minutes)/(365*24*60)));
   }
   const daysRemaining = moment(expiryMmDdYyyy, 'MM/DD/YYYY').diff(moment(currMmDdYyyy, 'MM/DD/YYYY'), 'days');
-  // console.log({ currMmDdYyyy, expiryMmDdYyyy, daysRemaining, remaingTimeInCurrentDay });
 
   return (remaingTimeInCurrentDay + daysRemaining/365)
 };
