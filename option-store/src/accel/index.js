@@ -47,12 +47,12 @@ const processBuffer = async () => {
       const endOfDaySummaryOption = state.get('end_of_day_summary_option')  || { strikes: {}, type: 'end_of_day_summary_option' };
       endOfDaySummaryOption.strikes[lastItem.strike] = saveData; 
       state.set('end_of_day_summary_option', endOfDaySummaryOption);
-      if (!saveData.greeks) {
+      // if (!saveData.greeks) {
         saveData.greeks = state.get(saveData.ticker);
-      }  
-      if (!saveData.niftyPrice) {
+      // }  
+      // if (!saveData.niftyPrice) {
         saveData.niftyPrice = state.get('niftyLatest');
-      }
+      // }
 
       const t = bs.yearsFromExpiry(saveData?.expiry);
       const niftyPrice = saveData.niftyPrice;

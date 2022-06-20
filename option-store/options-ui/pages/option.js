@@ -19,6 +19,8 @@ import { formatData, processOption } from '../utils/formatOption';
 // TODO: add last day oi
 // TODO: moneyflow of options
 // TODO: future -plot premium
+// moneflow for futures
+// money flow for cash
 
 const getOptionsData = async () => {
  const x =  await axios.post('http://18.234.100.126:3000/v1/options/getData', {
