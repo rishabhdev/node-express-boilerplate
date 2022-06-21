@@ -9,9 +9,10 @@ const bs = require('./blackAndScholes');
 // Send strike price also in option data
 // capture iv for max, avg, last
 // Thursday issue: this expiry ignored
-
+// Calculate avg quantity tick wise- this might indicate big player or small player - 
 // VWAP
 // ENdof day for all
+// dont ignore 50 in score calculation
 var strikes = require('./strikes');
 
 const apiKey = "NGk3a2NxbttJTxaO2aWh+raDXLk=";
@@ -41,8 +42,17 @@ const processBuffer = async () => {
   const values = _.values(groupedBuffer);
   const dataToSave = _.map(values, (data) => {
     const quantity = _.sumBy(data, 'qty');
+    const tickCount = _.size(data);
+    const avgQuantityPerTick = quantity/tickCount;
     const lastItem = _.last(data);
-    const saveData = { ...lastItem, quantity };
+    const volumeWeigtedTotalPrice = _.sumBy(data, (item) => {
+      const price = _.get(item, 'price', 0);
+      const volume = _.get(item, 'volume', 0);
+      return price*volume;
+    });;
+    const totalVolume = _.sumBy(data, 'volume');
+    const vWap = volumeWeigtedTotalPrice/totalVolume;
+    const saveData = { ...lastItem, quantity, tickCount, avgQuantityPerTick, vWap };
     if (lastItem.type === 'option') {
       const endOfDaySummaryOption = state.get('end_of_day_summary_option')  || { strikes: {}, type: 'end_of_day_summary_option' };
       endOfDaySummaryOption.strikes[lastItem.strike] = saveData; 

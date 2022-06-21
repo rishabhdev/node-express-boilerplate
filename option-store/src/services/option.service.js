@@ -31,9 +31,11 @@ const getData = async ({ start, end, type = 'option', expiry }) => {
     'liveData.expiry': true,
     'liveData.ticker': true,
     'liveData.calculatedIv': true,
+    'liveData.tickCount': true,
+    'liveData.avgQuantityPerTick': true,
+    'liveData.vWap': true,
   }).limit(80000);
 };
-
 module.exports = {
   insertData,
   getData,

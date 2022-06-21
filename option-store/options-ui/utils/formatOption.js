@@ -20,6 +20,15 @@ export const formatData = (apiData) => {
         if (!niftyPrice[item.liveData?.time]) {
           niftyPrice[item.liveData?.time] = item.liveData?.niftyPrice;
         }
+        const diff = Number(item.niftyPrice) - Number(strike);
+        let premium;
+        if (optionType === 'CE') {
+          premium = item.price - diff;
+        } else if(optionType === 'PE') {
+          premium = item.price + diff;
+        }
+
+        item.premium = premium;
 
         if (!item.liveData.calculatedIv) {
           const t = bs.yearsFromExpiry(item.liveData?.expiry);
@@ -69,7 +78,8 @@ const calculateCascading = (arr, inputKey, outputKey, callback) => {
          _.get(value, inputKey, 0), 
          arr.slice(0, index).map((item) => _.get(item, inputKey, 0)), 
          arr, 
-         index
+         index,
+         inputKey
         )
       );
   });
@@ -80,10 +90,21 @@ const calculateCoiByCv = (a, b, arr, index) => {
   return item.liveData.oi/item.liveData.volume;
 };
 
+// vol[roc] + pr decay - coi/v - iv[roc] 
+// Roc iv 40%
+// coi/v 20%
+// pr decay: 25% [premium on option price not price]
+// vol[roc]: 15%
 const calculateScore = (a, b, arr, index) => {
   const item = arr[index];
-  return (item.logOi - item.nPrice - item.nIv - item.nCoiByCv);
+  return (0.15*item.ndVolume - 0.25*item.nPremium - 0.4*item.ndIv - 0.2*item.nCoiByCv);
 }
+
+const calculateDelta = (a, b, arr, index, inputKey) => {
+  const item = arr[index];
+  const prev = _.last(b) || {};
+  return (_.get(item, inputKey, 0) - _.get(prev, inputKey, 0));
+};
 
 export const processOption = (formattedData)=> {
  const { CE, PE, CE_ARR, PE_ARR, NIFTY } = formattedData;
@@ -93,16 +114,30 @@ export const processOption = (formattedData)=> {
  _.forEach(CE_ARR, (strikeData, strike) => {
    calculateCascading(strikeData, 'liveData.oi', 'logOi', Math.log);
    calculateCascading(strikeData, 'liveData.price', 'nPrice', normalise);
+   calculateCascading(strikeData, 'liveData.volume', 'dVolume', calculateDelta);
+   calculateCascading(strikeData, 'liveData.calculatedIv', 'dIv', normalise);
+   calculateCascading(strikeData, 'dVolume', 'ndVolume', normalise);
+   calculateCascading(strikeData, 'dIv', 'ndIv', normalise);
+
    calculateCascading(strikeData, null, 'nCoiByCv', calculateCoiByCv);
    calculateCascading(strikeData, 'liveData.calculatedIv', 'nIv', normalise);
+   calculateCascading(strikeData, 'liveData.premium', 'nPremium', normalise);
+
    calculateCascading(strikeData, null, 'score', calculateScore);
  });
 
  _.forEach(PE_ARR, (strikeData, strike) => {
   calculateCascading(strikeData, 'liveData.oi', 'logOi', Math.log);
   calculateCascading(strikeData, 'liveData.price', 'nPrice', normalise);
+  calculateCascading(strikeData, 'liveData.volume', 'dVolume', calculateDelta);
+  calculateCascading(strikeData, 'liveData.calculatedIv', 'dIv', normalise);
+  calculateCascading(strikeData, 'dVolume', 'ndVolume', normalise);
+  calculateCascading(strikeData, 'dIv', 'ndIv', normalise);
+
   calculateCascading(strikeData, null, 'nCoiByCv', calculateCoiByCv);
   calculateCascading(strikeData, 'liveData.calculatedIv', 'nIv', normalise);
+  calculateCascading(strikeData, 'liveData.premium', 'nPremium', normalise);
+
   calculateCascading(strikeData, null, 'score', calculateScore);
  });
 
@@ -121,11 +156,64 @@ export const processOption = (formattedData)=> {
         return item.score + acc;
       }, peScore);
     });
-
-    score[time] = peScore - ceScore;
+    score[time] = (peScore - ceScore) + (score[time] || 0);
  });
+ formattedData.score = score;
 
- console.log("Score", score);
+ let coiCv = {};
+
+ _.forEach(NIFTY, (price, time) => {
+  const strikes = getStrikes(price);
+  // let ceScore = 0;
+  // let peScore = 0;
+
+  if (!coiCv[time]) {
+    coiCv[time] = {
+      otmCallCoiCv: 0,
+      itmCallCoiCv: 0,
+      otmPutCoiCv: 0,
+      itmPutCoiCv: 0, 
+    }
+  }
+  const { otmCallCoiCv, itmCallCoiCv, otmPutCoiCv, itmPutCoiCv } = coiCv[time];
+
+  _.forEach(strikes, (strike) => {
+    const ceArr = CE_ARR[strike];
+    const niftyPrice = price;
+
+    // TODO: atm is added twice
+    _.forEach(ceArr, (item) => {
+
+      if ((strike < niftyPrice) || (Math.abs(niftyPrice - strike) <= 50)) {
+        itmCallCoiCv += item.nCoiByCv;
+      } else if (strike > niftyPrice || (Math.abs(niftyPrice - strike) <= 50) ) {
+        otmCallCoiCv += item.nCoiByCv;
+      }
+    });
+
+    const peArr = PE_ARR[strike];
+
+    _.forEach(peArr, (item) => {
+      if ((strike > niftyPrice) || (Math.abs(niftyPrice - strike) <= 50)) {
+        itmPutCoiCv += item.nCoiByCv;
+      } else if (strike < niftyPrice || (Math.abs(niftyPrice - strike) <= 50) ) {
+        otmPutCoiCv += item.nCoiByCv;
+      }
+    });
+
+    coiCv[time] = {
+      otmCallCoiCv, 
+      itmCallCoiCv, 
+      otmPutCoiCv,
+      itmPutCoiCv
+    };
+  });
+
+});
+
+formattedData.coiCv = coiCv;
+
+//  console.log("Score", score);
 }
 
 const getStrikes = (assetPrice, interval = 50) => {
