@@ -54,9 +54,9 @@ const processBuffer = async () => {
     const vWap = volumeWeigtedTotalPrice/totalVolume;
     const saveData = { ...lastItem, quantity, tickCount, avgQuantityPerTick, vWap };
     if (lastItem.type === 'option') {
-      const endOfDaySummaryOption = state.get('end_of_day_summary_option')  || { strikes: {}, type: 'end_of_day_summary_option' };
-      endOfDaySummaryOption.strikes[lastItem.strike] = saveData; 
-      state.set('end_of_day_summary_option', endOfDaySummaryOption);
+      // const endOfDaySummaryOption = state.get('end_of_day_summary_option')  || { strikes: {}, type: 'end_of_day_summary_option' };
+      // endOfDaySummaryOption.strikes[lastItem.strike] = saveData; 
+      // state.set('end_of_day_summary_option', endOfDaySummaryOption);
       // if (!saveData.greeks) {
         saveData.greeks = state.get(saveData.ticker);
       // }  
@@ -71,8 +71,8 @@ const processBuffer = async () => {
       const iv = bs.getIv(niftyPrice, saveData?.strike, t, o, callPut);
       saveData.calculatedIv = iv;
     } else {
-      const key = `end_of_day_summary_${lastItem.type}`;
-      state.set(key, { ...lastItem, type: key });
+      // const key = `end_of_day_summary_${lastItem.type}`;
+      // state.set(key, { ...lastItem, type: key });
     }
 
     return saveData;
@@ -85,15 +85,15 @@ const processBuffer = async () => {
     // console.log('k', k);
   }
 
-  const curr = moment().utcOffset("+05:30");
-  const hours = curr.hours();
-  const minutes = curr.minutes();
-  if (hours === 15 && minutes === 30) {
-    const optionSummary = state.get('end_of_day_summary_option');
-    const futureSummary = state.get('end_of_day_summary_future');
-    const indexsummary = state.get('end_of_day_summary_index');
-    await axios.post('http://localhost:3000/v1/options/insertLiveData', { data: _.map([optionSummary, futureSummary, indexsummary], (_data) => ({ liveData: _data })) });
-  }
+  // const curr = moment().utcOffset("+05:30");
+  // const hours = curr.hours();
+  // const minutes = curr.minutes();
+  // if (hours === 15 && minutes === 30) {
+  //   const optionSummary = state.get('end_of_day_summary_option');
+  //   const futureSummary = state.get('end_of_day_summary_future');
+  //   const indexsummary = state.get('end_of_day_summary_index');
+  //   await axios.post('http://localhost:3000/v1/options/insertLiveData', { data: _.map([optionSummary, futureSummary, indexsummary], (_data) => ({ liveData: _data })) });
+  // }
 
   // save dataToSave
 };
