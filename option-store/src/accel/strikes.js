@@ -37,7 +37,7 @@ const isLastExpiryOfMonth = (date) => {
 const getOptionSymbols = (assetPrice) => {
   const strikes = getStrikes(assetPrice, 50);
   const currentDate = moment();
-  const currentExpiryIndex = _.findIndex(expiryDates, (date) => moment(date, 'dddd, DD MMM, YYYY').isAfter(currentDate));
+  const currentExpiryIndex = _.findIndex(expiryDates, (date) => moment(date, 'dddd, DD MMM, YYYY').isSameOrAfter(currentDate));
   const nextExpiryIndex = currentExpiryIndex + 1;
   const currentExpiry = moment(expiryDates[currentExpiryIndex], 'dddd, DD MMM, YYYY');
   const nextExpiry = moment(expiryDates[nextExpiryIndex], 'dddd, DD MMM, YYYY');
