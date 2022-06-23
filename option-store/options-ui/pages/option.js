@@ -24,8 +24,8 @@ import { formatData, processOption } from '../utils/formatOption';
 
 const getOptionsData = async () => {
  const x =  await axios.post('http://18.234.100.126:3000/v1/options/getData', {
-    "start": "2022-06-20T09:15:00.882+05:30",
-     "end": "2022-06-20T15:30:00.413+05:30",
+    "start": "2022-06-23T09:15:00.882+05:30",
+     "end": "2022-06-23T15:30:00.413+05:30",
      "type": "option",
      "expiry": "2022-06-23T00:00:00.000Z"
 });
@@ -37,8 +37,8 @@ return x;
 
 const dayEndSummary = async () => {
   const x =  await axios.post('http://18.234.100.126:3000/v1/options/getData', {
-    "start": "2022-06-17T15:25:00.882+05:30",
-     "end": "2022-06-17T15:32:00.413+05:30",
+    "start": "2022-06-22T15:25:00.882+05:30",
+     "end": "2022-06-22T15:32:00.413+05:30",
      "type": "option",
      "expiry": "2022-06-23T00:00:00.000Z"
 });
