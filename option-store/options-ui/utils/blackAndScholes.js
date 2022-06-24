@@ -119,7 +119,7 @@ import moment from 'moment';
  // s, k, t, v, r, callPut
  export function getIv(s, k, t, o, callPut) {
   const MAX_ITERATIONS = 50;
-  const r = 0.10;
+  const r = 0.05;
   let lowerBound = 0, upperBound = 1, lastLowerBound, lastUpperBound;
   let pLow = 0, pHigh = 0, i = 0;
   pLow = blackScholes(s, k, t, lowerBound, r, callPut);
@@ -155,8 +155,8 @@ import moment from 'moment';
  }
 
 
- export const yearsFromExpiry = (expiry) => {
-  const curr = moment().utcOffset("+05:30");
+ export const yearsFromExpiry = (expiry, curr = moment().utcOffset("+05:30")) => {
+  // const curr = moment().utcOffset("+05:30");
   const hours = curr.hours();
   const minutes = curr.minutes();
   const currMmDdYyyy = curr.format('MM/DD/YYYY');

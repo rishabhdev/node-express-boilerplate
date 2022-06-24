@@ -45,13 +45,14 @@ export const formatData = (apiData, endOfDayData) => {
         item.formattedTime = time;
 
         if (!item.liveData.calculatedIv) {
-          const t = bs.yearsFromExpiry(item.liveData?.expiry);
+          console.log('item.liveData.calculatedIv', item.liveData.calculatedIv);
+          const t = bs.yearsFromExpiry(item.liveData?.expiry, moment(item.createdAt).utcOffset("+05:30"));
           const niftyPrice = item.liveData.niftyPrice;
           const callPut = bs.getCallPut(item.liveData.ticker);
           const o = item.liveData.price;
-          
+          console.log({ niftyPrice, strike: item.liveData?.strike, t, o, callPut });
           const iv = bs.getIv(niftyPrice, item.liveData?.strike, t, o, callPut);
-
+          console.log("IV", iv);
           // console.log({niftyPrice, strike: item.liveData?.strike, t, o, callPut, iv});
           _.set(item, 'liveData.calculatedIv', iv);
         }

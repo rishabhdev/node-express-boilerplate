@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
+import _ from 'lodash';
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -11,9 +12,7 @@ import {
   Legend,
 } from 'chart.js';
 import { Line } from 'react-chartjs-2';
-// import randomColor from 'randomcolor';
-// import faker from 'faker';
-import _ from 'lodash';
+
 import { formatData, processOption } from '../utils/formatOption';
 
 // TODO: add last day oi
@@ -24,23 +23,23 @@ import { formatData, processOption } from '../utils/formatOption';
 
 const getOptionsData = async () => {
  const x =  await axios.post('http://18.234.100.126:3000/v1/options/getData', {
-    "start": "2022-06-23T09:15:00.882+05:30",
-     "end": "2022-06-23T15:30:00.413+05:30",
+    "start": "2022-06-24T09:15:00.882+05:30",
+     "end": "2022-06-24T15:30:00.413+05:30",
      "type": "option",
-     "expiry": "2022-06-23T00:00:00.000Z"
-});
+     "expiry": "2022-06-30T00:00:00.000Z"
+ });
 
-console.log('getOptionsData', x);
-return x;
+  console.log('getOptionsData', x);
+  return x;
 }
 
 
 const dayEndSummary = async () => {
   const x =  await axios.post('http://18.234.100.126:3000/v1/options/getData', {
-    "start": "2022-06-22T15:25:00.882+05:30",
-     "end": "2022-06-22T15:32:00.413+05:30",
+    "start": "2022-06-24T15:25:00.882+05:30",
+     "end": "2022-06-24T15:32:00.413+05:30",
      "type": "option",
-     "expiry": "2022-06-23T00:00:00.000Z"
+     "expiry": "2022-06-30T00:00:00.000Z"
 });
 const prevDayData = _.sortBy(x.data.data, 'liveData.time');
 const _dayEndSummary = { strikeVsOi: {}, strikeVsVolume: {}, strikeVsIv: {} };
@@ -190,7 +189,7 @@ const prepareDataSets = (formattedData) => {
       borderColor: '#80deea'
     }]
   };
-
+  // nOtmCallIv
   const iv = {
     labels: niftyTime,
     datasets: [{
