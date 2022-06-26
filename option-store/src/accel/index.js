@@ -1,5 +1,4 @@
 var apidata = require('pix-apidata');
-const moment = require('moment');
 const axios = require('axios').default;
 const _ = require('lodash');
 
@@ -54,25 +53,16 @@ const processBuffer = async () => {
     const vWap = volumeWeigtedTotalPrice/totalVolume;
     const saveData = { ...lastItem, quantity, tickCount, avgQuantityPerTick, vWap };
     if (lastItem.type === 'option') {
-      // const endOfDaySummaryOption = state.get('end_of_day_summary_option')  || { strikes: {}, type: 'end_of_day_summary_option' };
-      // endOfDaySummaryOption.strikes[lastItem.strike] = saveData; 
-      // state.set('end_of_day_summary_option', endOfDaySummaryOption);
-      // if (!saveData.greeks) {
-        saveData.greeks = state.get(saveData.ticker);
-      // }  
-      // if (!saveData.niftyPrice) {
-        saveData.niftyPrice = state.get('niftyLatest');
-      // }
-
+      saveData.greeks = state.get(saveData.ticker);
+      saveData.niftyPrice = state.get('niftyLatest');
       const t = bs.yearsFromExpiry(saveData?.expiry);
       const niftyPrice = saveData.niftyPrice;
       const callPut = bs.getCallPut(saveData.ticker);
       const o = saveData.price;
       const iv = bs.getIv(niftyPrice, saveData?.strike, t, o, callPut);
       saveData.calculatedIv = iv;
-    } else {
-      // const key = `end_of_day_summary_${lastItem.type}`;
-      // state.set(key, { ...lastItem, type: key });
+    } else if (lastItem.type === 'future') {
+      saveData.niftyPrice = state.get('niftyLatest');
     }
 
     return saveData;
@@ -82,23 +72,8 @@ const processBuffer = async () => {
   console.log('dataToSave', dataToSave)
   if (dataToSave.length) {
     const k = await axios.post('http://localhost:3000/v1/options/insertLiveData', { data: _.map(dataToSave, (_data) => ({ liveData: _data })) });
-    // console.log('k', k);
   }
-
-  // const curr = moment().utcOffset("+05:30");
-  // const hours = curr.hours();
-  // const minutes = curr.minutes();
-  // if (hours === 15 && minutes === 30) {
-  //   const optionSummary = state.get('end_of_day_summary_option');
-  //   const futureSummary = state.get('end_of_day_summary_future');
-  //   const indexsummary = state.get('end_of_day_summary_index');
-  //   await axios.post('http://localhost:3000/v1/options/insertLiveData', { data: _.map([optionSummary, futureSummary, indexsummary], (_data) => ({ liveData: _data })) });
-  // }
-
-  // save dataToSave
 };
-// await axios.post('http://localhost:3000/v1/options/insertData', { data: cleaned })
-
 
 const processNifty = (data) => {
   state.set('niftyLatest', data.price);
@@ -186,11 +161,6 @@ apidata.initialize(apiKey, apiServer)
   .then(async () => {
     console.log('initialized');
     await apidata.stream.subscribeAll(['NIFTY 50', 'NIFTY-1']);
-
-    // const strikesToSubscribe = _.map(strikes, (strike) => strike.symbol);
-    // await apidata.stream.subscribeGreeks(["NIFTY2220318500CE"])
-    // let eod = await apidata.history.getEod('NIFTY 50', '20201001', '20201030')
-    // console.log(eod);
   })
 
 

@@ -387,7 +387,7 @@ _.forEach(sortedTimeList, (time) => {
 const getStrikes = (assetPrice, interval = 50) => {
  const mod = assetPrice%interval;
  const atTheMoney = assetPrice - mod;
- const spread = 2;
+ const spread = 4;
  let strikes = [atTheMoney];
  let i = spread;
  while(i) {
