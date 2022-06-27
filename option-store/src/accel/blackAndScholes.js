@@ -182,7 +182,7 @@ const getCallPut = (ticker) => {
   if (type === 'PE') {
     return 'put';
   }
-  console.log("type - getCallPut", type);
+  // console.log("type - getCallPut", type);
   return 'put';
 }
  

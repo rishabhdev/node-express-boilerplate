@@ -1,6 +1,7 @@
 var apidata = require('pix-apidata');
 const axios = require('axios').default;
 const _ = require('lodash');
+const nodemailer = require("nodemailer");
 
 const bs = require('./blackAndScholes');
 
@@ -16,6 +17,15 @@ var strikes = require('./strikes');
 
 const apiKey = "NGk3a2NxbttJTxaO2aWh+raDXLk=";
 const apiServer = "apidata.accelpix.in";
+
+const transporter = nodemailer.createTransport({
+  host: 'smtp.ethereal.email',
+  port: 587,
+  auth: {
+      user: 'beqee72gocioj72j@ethereal.email',
+      pass: 'T4qtBuSn4wY2H5JxU2'
+  }
+});
 
 const state = {
   values: {},
@@ -36,6 +46,7 @@ const state = {
 }
 
 const processBuffer = async () => {
+  console.log("Checkpoint 1");
   const buffer = state.get('buffer');
   const groupedBuffer = _.groupBy(buffer, 'ticker');
   const values = _.values(groupedBuffer);
@@ -48,7 +59,9 @@ const processBuffer = async () => {
       const price = _.get(item, 'price', 0);
       const volume = _.get(item, 'volume', 0);
       return price*volume;
-    });;
+    });
+    console.log("Checkpoint 2");
+
     const totalVolume = _.sumBy(data, 'volume');
     const vWap = volumeWeigtedTotalPrice/totalVolume;
     const saveData = { ...lastItem, quantity, tickCount, avgQuantityPerTick, vWap };
@@ -61,24 +74,33 @@ const processBuffer = async () => {
       const o = saveData.price;
       const iv = bs.getIv(niftyPrice, saveData?.strike, t, o, callPut);
       saveData.calculatedIv = iv;
+      console.log("Checkpoint 3");
+
     } else if (lastItem.type === 'future') {
       saveData.niftyPrice = state.get('niftyLatest');
+      console.log("Checkpoint 4");
+
     }
+    console.log("Checkpoint 5");
 
     return saveData;
   });
   state.emptyBuffer();
 
-  console.log('dataToSave', dataToSave)
+  // console.log('dataToSave', dataToSave)
   if (dataToSave.length) {
     const k = await axios.post('http://localhost:3000/v1/options/insertLiveData', { data: _.map(dataToSave, (_data) => ({ liveData: _data })) });
   }
+  console.log("Checkpoint 6");
+
 };
 
 const processNifty = (data) => {
   state.set('niftyLatest', data.price);
   const modifiedData = { ...data, type: 'index', symbol: 'NIFTY', timestamp: Date.now() };
   state.addToBuffer(modifiedData);
+  console.log("Checkpoint 7");
+
 }
 
 
@@ -100,18 +122,25 @@ const processOption = (data) => {
 
   // const endOfDaySummary = 
   state.addToBuffer(modifiedData);
+  console.log("Checkpoint 8");
+
 }
 
 const processFuture = (data) => {
   const modifiedData = { ...data, type: 'future', symbol: 'NIFTY', timestamp: Date.now() };
   state.addToBuffer(modifiedData);
+  console.log("Checkpoint 9");
+
 }
 
 const processGreek = (data) => {
   state.set(data.ticker, data);
+  console.log("Checkpoint 10");
+
 }
 
 apidata.callbacks.onTrade(t => {
+  try {
   if (t.ticker === 'NIFTY 50') {
     processNifty(t);
   } else if (t.ticker === 'NIFTY-1') {
@@ -119,7 +148,16 @@ apidata.callbacks.onTrade(t => {
   } else {
     processOption(t);
   }
-  // console.log(t);
+} catch (e) {
+  console.log('onTrade-Error');
+  console.log(e);
+  await transporter.sendMail({
+    from: 'beqee72gocioj72j@ethereal.email', // sender address
+    to: "rishabdev919@gmail.com", // list of receivers
+    subject: "Accel crashed", // Subject line
+    text: e.toString(), // plain text body
+  });
+}
 });
 
 apidata.callbacks.onGreeks(greek => {
@@ -136,7 +174,7 @@ const subscribeForOptions = async () => {
     const oldStrikes = state.get('strikes');
     const enteringStrikes = _.difference(newStrikes, oldStrikes || []);
     const leavingStrikes = _.difference(oldStrikes, newStrikes || []);
-    console.log({ enteringStrikes, leavingStrikes });
+    // console.log({ enteringStrikes, leavingStrikes });
     if (enteringStrikes.length) {
       await apidata.stream.subscribeAll(enteringStrikes);
       // await apidata.stream.unsubscribeAll(leavingStrikes);
@@ -157,6 +195,7 @@ const subscribeForFutures = async () => {
 
 }
 
+
 apidata.initialize(apiKey, apiServer)
   .then(async () => {
     console.log('initialized');
@@ -166,6 +205,17 @@ apidata.initialize(apiKey, apiServer)
 
 
   setInterval(async () => {
-    await processBuffer();
-    await subscribeForOptions();
+    try {
+      await processBuffer();
+      await subscribeForOptions();
+    } catch (e) {
+      console.log(e);
+      await transporter.sendMail({
+        from: 'beqee72gocioj72j@ethereal.email', // sender address
+        to: "rishabdev919@gmail.com", // list of receivers
+        subject: "Accel crashed", // Subject line
+        text: e.toString(), // plain text body
+      });
+    }
+    
   }, 1000*30);
