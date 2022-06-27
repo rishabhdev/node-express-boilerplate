@@ -23,8 +23,8 @@ import { formatData, processOption } from '../utils/formatOption';
 
 const getOptionsData = async () => {
  const x =  await axios.post('http://18.234.100.126:3000/v1/options/getData', {
-    "start": "2022-06-24T09:15:00.882+05:30",
-     "end": "2022-06-24T15:30:00.413+05:30",
+    "start": "2022-06-27T09:15:00.882+05:30",
+     "end": "2022-06-27T15:30:00.413+05:30",
      "type": "option",
      "expiry": "2022-06-30T00:00:00.000Z"
  });
@@ -124,7 +124,8 @@ const prepareDataSets = (formattedData) => {
   const moneyFlowArray = formattedData.moneyFlowArray;
   const ivArray = formattedData.ivArray;
   const premiumArray = formattedData.premiumArray;
-
+  const quantityPerTickArray = formattedData.quantityPerTickarray;
+  const oiArray = formattedData.oiArray;
   const coiByCv = {
     labels: niftyTime,
     datasets: [{
@@ -212,12 +213,58 @@ const prepareDataSets = (formattedData) => {
     }]
   };
 
+  const quantityPerTick = {
+    labels: niftyTime,
+    datasets: [{
+      label: 'OTM CALL',
+      data: _.map(quantityPerTickArray, 'quantityPerTickValue.otmCallQuantityPerTick'),
+      borderColor: '#bcaaa4'
+
+    }, {
+      label: 'ITM CALL',
+      data: _.map(quantityPerTickArray, 'quantityPerTickValue.itmCallQuantityPerTick'),
+      borderColor: '#f8bbd0'
+    }, {
+      label: 'OTM PUT',
+      data: _.map(quantityPerTickArray, 'quantityPerTickValue.otmPutQuantityPerTick'),
+      borderColor: '#7986cb'
+    }, {
+      label: 'ITM PUT',
+      data: _.map(quantityPerTickArray, 'quantityPerTickValue.itmPutQuantityPerTick'),
+      borderColor: '#80deea'
+    }]
+  };
+
+  const oi = {
+    labels: niftyTime,
+    datasets: [{
+      label: 'OTM CALL',
+      data: _.map(oiArray, 'oiValue.otmCallOi'),
+      borderColor: '#bcaaa4'
+
+    }, {
+      label: 'ITM CALL',
+      data: _.map(oiArray, 'oiValue.itmCallOi'),
+      borderColor: '#f8bbd0'
+    }, {
+      label: 'OTM PUT',
+      data: _.map(oiArray, 'oiValue.otmPutOi'),
+      borderColor: '#7986cb'
+    }, {
+      label: 'ITM PUT',
+      data: _.map(oiArray, 'oiValue.itmPutOi'),
+      borderColor: '#80deea'
+    }]
+  };
+
   return {
     oci,
     coiByCv,
     moneyFlow,
     iv,
     premium,
+    quantityPerTick,
+    oi
   }
 
   // const 
@@ -259,6 +306,12 @@ function App() {
       <br />
       <h2>Money flow</h2>
       {dataSet.moneyFlow && <Line options={options} data={dataSet.moneyFlow} />}
+
+      <h2>Open Interest</h2>
+      {dataSet.oi && <Line options={options} data={dataSet.oi} />}
+
+      <h2>Quantity Per Tick</h2>
+      {dataSet.quantityPerTick && <Line options={options} data={dataSet.quantityPerTick} />}
       <br />
     </div>
   )

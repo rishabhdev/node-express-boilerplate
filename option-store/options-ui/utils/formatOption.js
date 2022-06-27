@@ -165,7 +165,7 @@ export const processOption = (formattedData)=> {
   calculateCascading(strikeData, null, 'score', calculateScore);
  });
 
- let _oldStrikes = [];
+//  let _oldStrikes = [];
 
  _.forEach(NIFTY, (price, time) => {
   
@@ -175,7 +175,7 @@ export const processOption = (formattedData)=> {
     //   return;
     // }
 
-    _oldStrikes= strikes;
+    // _oldStrikes= strikes;
 
     let ceScore = 0;
     let peScore = 0;
@@ -205,11 +205,31 @@ export const processOption = (formattedData)=> {
  let moneyFlow = {};
  const iv = {};
  const premium = {};
- let oldStrikes = [];
+ const quantityPerTick = {};
+ const oi = {};
+//  let oldStrikes = [];
+
  _.forEach(NIFTY, (price, time) => {
   const strikes = getStrikes(price);
-  oldStrikes= strikes;
-  
+  // oldStrikes= strikes;
+  if (!oi[time]) {
+    oi[time] = {
+      otmCallOi: 0,
+      itmCallOi: 0,
+      otmPutOi: 0,
+      itmPutOi: 0, 
+    }
+  };
+
+  if (!quantityPerTick[time]) {
+    quantityPerTick[time] = {
+      otmCallQuantityPerTick: 0,
+      itmCallQuantityPerTick: 0,
+      otmPutQuantityPerTick: 0,
+      itmPutQuantityPerTick: 0, 
+    }
+  }
+
   if (!iv[time]) {
     iv[time] = {
       otmCallIv: 0,
@@ -250,6 +270,9 @@ export const processOption = (formattedData)=> {
   let { otmCallIv, itmCallIv, otmPutIv, itmPutIv } = iv[time];
   let { otmCallPremium, itmCallPremium, otmPutPremium, itmPutPremium } = premium[time]
 
+  let { otmCallOi, itmCallOi, otmPutOi, itmPutOi } = oi[time]
+  let { otmCallQuantityPerTick, itmCallQuantityPerTick, otmPutQuantityPerTick, itmPutQuantityPerTick } = quantityPerTick[time]
+
   _.forEach(strikes, (strike) => {
     const ceArr = CE_ARR[strike];
     const niftyPrice = price;
@@ -261,17 +284,23 @@ export const processOption = (formattedData)=> {
       const moneyflow = item.liveData.price*item.dVolume;
       const iv = item.nIv;
       const premium = item.nPremium;
+      const _oi = item.liveData.oi;
+      const _quantityPerTick = item.liveData.avgQuantityPerTick || 0;
 
       if ((strike < niftyPrice) || (Math.abs(niftyPrice - strike) <= 50)) {
         itmCallCoiCv += item.nCoiByCv;
         itmCallMoneyFlow += moneyflow;
         itmCallIv += iv;
         itmCallPremium += premium; 
+        itmCallOi += _oi;
+        itmCallQuantityPerTick += _quantityPerTick;
       } else if (strike > niftyPrice || (Math.abs(niftyPrice - strike) <= 50) ) {
         otmCallCoiCv += item.nCoiByCv;
         otmCallMoneyFlow += moneyflow;
         otmCallIv += iv;
         otmCallPremium += premium;
+        otmCallOi += _oi;
+        otmCallQuantityPerTick += _quantityPerTick;
       }
     });
 
@@ -283,18 +312,39 @@ export const processOption = (formattedData)=> {
       const iv = item.nIv;
       const premium = item.nPremium;
       const moneyflow = item.liveData.price*item.dVolume;
+      const _oi = item.liveData.oi;
+      const _quantityPerTick = item.liveData.avgQuantityPerTick || 0;
       if ((strike > niftyPrice) || (Math.abs(niftyPrice - strike) <= 50)) {
         itmPutCoiCv += item.nCoiByCv;
         itmPutMoneyFlow += moneyflow;
         itmPutIv += iv;
         itmPutPremium += premium; 
+        itmPutOi += _oi;
+        itmPutQuantityPerTick += _quantityPerTick;
       } else if (strike < niftyPrice || (Math.abs(niftyPrice - strike) <= 50) ) {
         otmPutCoiCv += item.nCoiByCv;
         otmPutMoneyFlow += moneyflow;
         otmPutIv += iv;
         otmPutPremium += premium; 
+        otmPutOi += _oi;
+        otmPutQuantityPerTick += _quantityPerTick;
       }
     });
+
+
+    oi[time] = {
+      otmCallOi,
+      itmCallOi,
+      otmPutOi,
+      itmPutOi, 
+    };
+
+    quantityPerTick[time] = {
+      otmCallQuantityPerTick,
+      itmCallQuantityPerTick,
+      otmPutQuantityPerTick,
+      itmPutQuantityPerTick, 
+    };
 
     coiCv[time] = {
       otmCallCoiCv, 
@@ -335,11 +385,25 @@ let coiCvArray = [];
 let moneyFlowArray = [];
 const ivArray = [];
 const premiumArray = [];
+const quantityPerTickArray = [];
+const oiArray = [];
 _.forEach(sortedTimeList, (time) => {
   const coiCvValue = coiCv[time];
   const moneyFlowValue = moneyFlow[time];
   const premiumValue = premium[time];
   const ivValue = iv[time];
+  const oiValue = oi[time];
+  const quantityPerTickValue = quantityPerTick[time];
+  quantityPerTickArray.push({
+    time,
+    quantityPerTickValue
+  });
+
+  oiArray.push({
+    time,
+    oiValue
+  });
+
   coiCvArray.push({
     time,
     coiCvValue,
@@ -377,6 +441,9 @@ _.forEach(sortedTimeList, (time) => {
   calculateCascading(ivArray, 'ivValue.itmCallIv', 'ivValue.nItmCallIv', normalise);
   calculateCascading(ivArray, 'ivValue.otmPutIv', 'ivValue.nOtmPutIv', normalise);
   calculateCascading(ivArray, 'ivValue.itmPutIv', 'ivValue.nItmPutIv', normalise);
+
+  formattedData.oiArray = oiArray;
+  formattedData.quantityPerTickarray = quantityPerTickArray;
 
   formattedData.coiCvArray = coiCvArray;
   formattedData.moneyFlowArray = moneyFlowArray;
