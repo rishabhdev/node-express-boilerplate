@@ -151,7 +151,7 @@ apidata.callbacks.onTrade(t => {
 } catch (e) {
   console.log('onTrade-Error');
   console.log(e);
-  await transporter.sendMail({
+  transporter.sendMail({
     from: 'beqee72gocioj72j@ethereal.email', // sender address
     to: "rishabdev919@gmail.com", // list of receivers
     subject: "Accel crashed", // Subject line
